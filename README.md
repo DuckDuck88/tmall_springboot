@@ -1,0 +1,2 @@
+# tmall_springboot
+本项目是完全仿照天猫的Springboot项目，包括前台购物页面和后台商品管理
