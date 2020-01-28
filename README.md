@@ -1,6 +1,6 @@
 # tmall_springboot
 开发环境：jdk8、Mysql 5.5.15、IDEA 2019   
-完全仿照天猫的Springboot项目，本项目已经部署到云服务器，点击如下链接访问http://119.3.190.216/tmall_springboot-0.0.1-SNAPSHOT  
+完全仿照天猫的Springboot项目，本项目已经部署到云服务器，点击如下链接访问http://119.3.190.216:8080/tmall_springboot-0.0.1-SNAPSHOT
 ！！！部署只为学习交流使用，请勿使用支付功能！！！   
 ### 已完成的基本功能如下：      
 用户：展示商品分类、搜索商品、加入购物车、直接购买、结算购物车、提交订单、确认收货、评价        
