@@ -23,6 +23,12 @@ import com.tmall.service.ReviewService;
 import com.tmall.service.UserService;
 import com.tmall.util.Result;
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.crypto.SecureRandomNumberGenerator;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -75,39 +81,69 @@ public class ForeRESTController {
         return categories;
     }
 
-    //注册
+    /*
+    * 注册功能，通过shrio进行安全管理
+    * */
     @PostMapping("/foreregister")
-    public Object register(@RequestBody User user, HttpSession session){ //通过参数User获取浏览器提交的账号密码
+    public Object register(@RequestBody User user){ //通过参数User获取浏览器提交的账号密码
         String name=user.getName();
         String password=user.getPassword();
-        name= HtmlUtils.htmlEscape(name);//htmlEscape(name)对账号里的特殊符号进行转义
+        name= HtmlUtils.htmlEscape(name);           //htmlEscape(name)对账号里的特殊符号进行转义
         user.setName(name);
-        boolean exist=userService.isExist(name);//判断用户名是否存在
+
+        boolean exist=userService.isExist(name);    //判断用户名是否存在
 
         if(exist){
             String message="起名字好难鸭，这个名字已经有人用了哦";
             return Result.fail(message);
         }
-        user.setPassword(password);
+
+        String salt=new SecureRandomNumberGenerator().nextBytes().toString();//注册账户时随机产生salt
+        int times=2;                //设置加密次数
+        String algorithmName="md5"; //设置加密算法
+        String encodedPassword=new SimpleHash(algorithmName,password,salt,times).toString(); //对密码进行加密
+
+        user.setSalt(salt);
+        user.setPassword(encodedPassword);
         userService.add(user);
+
         return Result.success();
     }
-    //登陆功能
+
+    /*
+    * 登陆
+    * 登陆时通过Shiro的方式进行校验
+    * */
     @PostMapping("/forelogin")
     public Object login(@RequestBody User userParam,HttpSession session){
         String name=userParam.getName();
         name= HtmlUtils.htmlEscape(name);
-        String password=userParam.getPassword();
 
-        User user=userService.get(name, password);
-        if (user==null){
-            String message="账号或密码错误";
-            return Result.fail(message);
-        }else {
+        Subject subject= SecurityUtils.getSubject();
+        UsernamePasswordToken token=new UsernamePasswordToken(name,userParam.getPassword());
+        try{
+            subject.login(token);
+            User user=userService.getByName(name);
             session.setAttribute("user", user);
+            return Result.success();
+        }catch (AuthenticationException e){
+            String message="账号密码错误";
+            return Result.fail(message);
         }
-        return Result.success();
+
     }
+
+    //检查是否登录
+    @GetMapping(value = "forecheckLogin")
+    public Object checkLogin( ) {
+        Subject subject=SecurityUtils.getSubject();
+        if (subject.isAuthenticated())
+            return Result.success();
+        else
+            return Result.fail("未登录");
+    }
+
+
     //展示商品的详情，价格、销量、评论、图片等，将他们放入map中
     @GetMapping("/foreproduct/{pid}")
     public Object product(@PathVariable(value = "pid")int pid){
@@ -126,14 +162,6 @@ public class ForeRESTController {
         map.put("pvs", pvs);
         map.put("reviews", reviews);
         return Result.success(map);
-    }
-    //检查是否登录
-    @GetMapping(value = "forecheckLogin")
-    public Object checkLogin( HttpSession session) {
-        User user =(User)  session.getAttribute("user");
-        if(null!=user)
-            return Result.success();
-        return Result.fail("未登录");
     }
 
     //查询分类下所有商品和商品的基本信息（销量、图片、名字等）
@@ -174,6 +202,7 @@ public class ForeRESTController {
         productService.setSaleAndReviewNumber(ps);
         return ps;
     }
+
     //购买
     @GetMapping(value = "forebuyone")
     public Object bugone(int pid,int num,HttpSession session){
@@ -236,6 +265,7 @@ public class ForeRESTController {
         buyOneAndAddCart(pid, num, session);
         return Result.success();
     }
+
     //根据用户返回和这个用户关联的订单项
     @GetMapping(value = "forecart")
     public Object cart(HttpSession session){
@@ -244,6 +274,7 @@ public class ForeRESTController {
         productImageService.setFirstProdutImagesOnOrderItems(ois);
         return ois;
     }
+
     //购物车中调整数量
     @GetMapping(value = "forechangeOrderItem")
     public Object changeOrderItem(HttpSession session, int pid, int num){
@@ -259,6 +290,7 @@ public class ForeRESTController {
         }
         return Result.success();
     }
+
     //购物车中删除订单物品
     @GetMapping(value = "foredeleteOrderItem")
     public Object deleteOrderItem(HttpSession session,int oiid){
@@ -268,6 +300,7 @@ public class ForeRESTController {
         orderItemService.delete(oiid);
         return Result.success();
     }
+
     //结算订单时执行以下操作
     @PostMapping(value = "forecreateOrder")
     public Object createOrder(@RequestBody Order order,HttpSession session){
@@ -289,6 +322,7 @@ public class ForeRESTController {
 
         return Result.success(map);
     }
+
     //购买成功后更新订单信息
     @GetMapping(value = "forepayed")
     public Object payed(int oid){
@@ -298,6 +332,7 @@ public class ForeRESTController {
         orderService.update(order);
         return order;
     }
+
     //查询我的订单
     @GetMapping("forebought")
     public Object bought(HttpSession session) {
@@ -308,6 +343,7 @@ public class ForeRESTController {
         orderService.removeOrderFromOrderItem(os);
         return os;
     }
+
     //确认收货
     @GetMapping("foreconfirmPay")
     public Object confirmPay(int oid) {
@@ -317,6 +353,7 @@ public class ForeRESTController {
         orderService.removeOrderFromOrderItem(o);//移除订单项上的订单属性，否则会重复递归
         return o;
     }
+
     @GetMapping("foreorderConfirmed")
     public Object orderConfirmed( int oid) {
         Order o = orderService.get(oid);
@@ -326,6 +363,7 @@ public class ForeRESTController {
         orderService.update(o);
         return Result.success();
     }
+
     //仅设置对订单中第一个产品进行评价
     /*
     *  获取参数oid

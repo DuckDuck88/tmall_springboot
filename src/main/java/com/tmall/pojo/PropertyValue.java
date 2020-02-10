@@ -18,7 +18,8 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="propertyvalue")
-@JsonIgnoreProperties({ "handler","hibernateLazyInitializer" })
+//@JsonIgnoreProperties({ "handler","hibernateLazyInitializer" })
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 @ToString
 public class PropertyValue {
     @Id

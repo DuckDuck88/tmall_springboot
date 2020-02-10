@@ -5,11 +5,15 @@ import com.tmall.pojo.OrderItem;
 import com.tmall.pojo.Product;
 import com.tmall.pojo.ProductImage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@CacheConfig(cacheNames = "productImages")
 public class ProductImageService   {
 
     public static final String type_single = "single";
@@ -19,21 +23,29 @@ public class ProductImageService   {
     @Autowired
     ProductService productService;
 
+    //增
+    @CacheEvict(allEntries = true)
     public void add(ProductImage bean) {
         productImageDAO.save(bean);
 
     }
+    //删
+    @CacheEvict(allEntries = true)
     public void delete(int id) {
         productImageDAO.deleteById(id);
     }
 
+    //查
+    @Cacheable(key = "'productImages-one-'+#p0")
     public ProductImage get(int id) {
-        return productImageDAO.getOne(id);
+        return productImageDAO.findById(id).get();
     }
 
+    @Cacheable(key = "'productImages-single-pid-'+#p0.id")
     public List<ProductImage> listSingleProductImages(Product product) {
         return productImageDAO.findByProductAndTypeOrderByIdDesc(product, type_single);
     }
+    @Cacheable(key = "'productImages-detail-pid-'+#p0.id")
     public List<ProductImage> listDetailProductImages(Product product) {
         return productImageDAO.findByProductAndTypeOrderByIdDesc(product, type_detail);
     }

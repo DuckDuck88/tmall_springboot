@@ -1,11 +1,9 @@
 package com.tmall.web;
 
-import com.tmall.pojo.Product;
-import com.tmall.service.ProductService;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import javax.servlet.http.HttpSession;
 
 /*
 * 专用于前台页面跳转的页面分发器
@@ -80,9 +78,10 @@ public class ForePageController {
     }
     //退出当前账户并返回首页
     @GetMapping("/forelogout")
-    public String logout(HttpSession session) {
-        session.removeAttribute("user");
+    public String logout() {
+        Subject subject= SecurityUtils.getSubject();
+        if (subject.isAuthenticated())
+            subject.logout();
         return "redirect:home";
     }
-
 }

@@ -43,7 +43,7 @@ public class OrderItemService {
         orderItemDAO.save(orderItem);
     }
     public OrderItem get(int id) {
-        return orderItemDAO.getOne(id);
+        return orderItemDAO.findById(id).get();
     }
 
     public void delete(int id) {

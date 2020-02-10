@@ -1,7 +1,8 @@
 package com.tmall.interceptor;
 
-import com.tmall.pojo.User;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -46,15 +47,17 @@ public class LoginInterceptor implements HandlerInterceptor {
         String uri = httpServletRequest.getRequestURI();
         uri = StringUtils.remove(uri, contexPath + "/");
         String page = uri;
+
         if (begingWith(page, requireAuthPages)) {
-            User user = (User) session.getAttribute("user");
-            if (user == null) {
+            Subject subject= SecurityUtils.getSubject();
+            if (!subject.isAuthenticated()){
                 httpServletResponse.sendRedirect("login");
                 return false;
             }
         }
         return true;
     }
+
     //判断是否访问需要登陆页面
     private boolean begingWith(String page, String[] requiredAuthPages) {
         boolean result = false;

@@ -22,7 +22,8 @@ import java.util.List;
 
 @Entity
 @Table(name="product")
-@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 @Document(indexName = "tmall_springboot",type = "product") //elasticsearch全局搜索注解
 @ToString
 public class Product {

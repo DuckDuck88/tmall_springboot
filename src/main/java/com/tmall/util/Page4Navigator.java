@@ -1,5 +1,6 @@
 package com.tmall.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -8,7 +9,9 @@ import java.util.List;
 * 对 Page 类进行了封装，然后在构造方法里提供了一个 navigatePages 参数。
 * */
 public class Page4Navigator<T> {
+   @JsonIgnore
     Page<T> pageFromJPA;
+
     int navigatePages; //展示页数
 
     int totalPages; //总页数

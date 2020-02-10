@@ -39,6 +39,7 @@ public class CategoryController {
             throws Exception {
         start=start<0?0:start;
         Page4Navigator<Category> page=categoryService.list(start, size, 5);//5表示导航分页最多有5个
+
         return page;
     }
 
@@ -91,4 +92,5 @@ public class CategoryController {
         }
         return bean;
     }
+
 }

@@ -14,7 +14,8 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name="user")
-@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

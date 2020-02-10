@@ -16,7 +16,8 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="productimage")
-@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
+//@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 public class ProductImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

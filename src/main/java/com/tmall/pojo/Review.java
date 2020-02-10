@@ -16,7 +16,8 @@ import java.util.Date;
 
 @Entity
 @Table(name="review")
-@JsonIgnoreProperties({ "handler","hibernateLazyInitializer" })
+//@JsonIgnoreProperties({ "handler","hibernateLazyInitializer" })
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

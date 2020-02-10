@@ -15,7 +15,8 @@ import java.util.List;
 
 @Entity  //实体类注解
 @Table(name="category") //对应表名为category
-@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})   //使用前后端分离，忽略两个无需json化的属性
+//@JsonIgnoreProperties({"handler","hibernateLazyInitializer"})   //使用前后端分离，忽略两个无需json化的属性
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","fieldHandler"})
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
