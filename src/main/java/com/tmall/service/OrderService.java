@@ -66,9 +66,9 @@ public class OrderService {
     public float add(Order order,List<OrderItem> ois){
         float total =0;
         add(order);
-        if (false){ //当为true时故意抛出异常，测试事务
-            throw new RuntimeException();
-        }
+//        if (false){ //当为true时故意抛出异常，测试事务
+//            throw new RuntimeException();
+//        }
         for (OrderItem oi: ois) {
             oi.setOrder(order);
             orderItemService.update(oi);

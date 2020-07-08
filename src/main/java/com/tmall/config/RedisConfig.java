@@ -1,5 +1,9 @@
 package com.tmall.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
@@ -9,10 +13,14 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.net.UnknownHostException;
 import java.time.Duration;
 
 /**
@@ -20,6 +28,9 @@ import java.time.Duration;
  */
 @Configuration
 @EnableCaching
+@ConditionalOnClass(RedisOperations.class)
+@EnableConfigurationProperties(RedisProperties.class)
+//@Import({ LettuceConnectionConfiguration.class, JedisConnectionConfiguration.class })
 public class RedisConfig extends CachingConfigurerSupport {
 
     /**
@@ -43,5 +54,21 @@ public class RedisConfig extends CachingConfigurerSupport {
         defaultCacheConfig.entryTtl(Duration.ofSeconds(60*60));
         //初始化RedisCacheManager
         return new RedisCacheManager(redisCacheWriter, defaultCacheConfig);
+    }
+    @Bean
+    @ConditionalOnMissingBean(name = "redisTemplate")
+    public RedisTemplate<Object, Object> redisTemplate(
+            RedisConnectionFactory redisConnectionFactory) throws Exception {
+        RedisTemplate<Object, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+        return template;
+    }
+    @Bean
+    @ConditionalOnMissingBean
+    public StringRedisTemplate stringRedisTemplate(
+            RedisConnectionFactory redisConnectionFactory) throws UnknownHostException {
+        StringRedisTemplate template = new StringRedisTemplate();
+        template.setConnectionFactory(redisConnectionFactory);
+        return template;
     }
 }

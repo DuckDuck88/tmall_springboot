@@ -130,7 +130,6 @@ public class ForeRESTController {
             String message="账号密码错误";
             return Result.fail(message);
         }
-
     }
 
     //检查是否登录
@@ -193,6 +192,7 @@ public class ForeRESTController {
         }
         return c;
     }
+
     @PostMapping(value = "foresearch")
     public Object search(String keyword){
         if(null==keyword)
@@ -207,6 +207,13 @@ public class ForeRESTController {
     @GetMapping(value = "forebuyone")
     public Object bugone(int pid,int num,HttpSession session){
         return buyOneAndAddCart(pid,num,session);
+    }
+
+    //添加购物车
+    @GetMapping(value = "foreaddCart")
+    public Object addCart(int pid,int num,HttpSession session){
+        buyOneAndAddCart(pid, num, session);
+        return Result.success();
     }
 
     private int buyOneAndAddCart(int pid, int num, HttpSession session) {
@@ -236,35 +243,27 @@ public class ForeRESTController {
         }
         return oiid;
     }
+
     //结算页面
     @GetMapping("forebuy")
     public Object buy(String[] oiid,HttpSession session){
         List<OrderItem> orderItems = new ArrayList<>();
         float total = 0;
-
         for (String strid : oiid) {
             int id = Integer.parseInt(strid);
             OrderItem oi= orderItemService.get(id);
             total +=oi.getProduct().getPromotePrice()*oi.getNumber();
             orderItems.add(oi);
         }
-
         productImageService.setFirstProdutImagesOnOrderItems(orderItems);
-
         session.setAttribute("ois", orderItems);
-
         Map<String,Object> map = new HashMap<>();
         map.put("orderItems", orderItems);
         map.put("total", total);
         return Result.success(map);
     }
 
-    //添加购物车
-    @GetMapping(value = "foreaddCart")
-    public Object addCart(int pid,int num,HttpSession session){
-        buyOneAndAddCart(pid, num, session);
-        return Result.success();
-    }
+
 
     //根据用户返回和这个用户关联的订单项
     @GetMapping(value = "forecart")

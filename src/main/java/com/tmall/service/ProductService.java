@@ -51,6 +51,7 @@ public class ProductService {
         productDAO.save(bean);
     }
 
+
     //查
     @Cacheable(key = "'products-one-'+#p0")
     public Product get(int id) {
