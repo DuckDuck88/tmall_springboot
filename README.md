@@ -1,6 +1,7 @@
 # tmall_springboot
-开发环境：JDK8、MySQL 5.5.15、IDEA 2019、Redis5.5.15
-完全仿照天猫的Springboot项目，本项目已经部署到云服务器，点击如下链接访问http://119.3.190.216:8080/tmall_springboot-0.0.1-SNAPSHOT
+开发环境：JDK8、MySQL 5.5.15、IDEA 2019、Redis 3.2.1   
+仿照天猫的Springboot项目，实现天猫基本功能  
+本项目已经部署到云服务器，点击如下链接访问http://119.3.190.216:8080/tmall_springboot-0.0.1-SNAPSHOT    
 ！！！部署只为学习交流使用，请勿使用支付功能！！！
 
 ### 已完成的基本功能如下：
