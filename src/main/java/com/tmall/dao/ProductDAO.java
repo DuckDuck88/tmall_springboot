@@ -11,6 +11,5 @@ import java.util.List;
 public interface ProductDAO extends JpaRepository<Product,Integer>{
     Page<Product> findByCategory(Category category, Pageable pageable);//
     List<Product> findByCategoryOrderById(Category category);//通过分类查询产品，无需分页
-
     List<Product> findByNameLike(String keyword, Pageable pageable);
 }

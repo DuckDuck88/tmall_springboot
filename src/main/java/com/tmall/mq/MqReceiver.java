@@ -6,9 +6,9 @@ import com.tmall.service.MiaoShaService;
 import com.tmall.util.String2Bean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
 /**
  * @Program: tmall_springboot
@@ -31,16 +31,18 @@ public class MqReceiver {
         log.info("receive message:"+msg);
         MqMessage mqMessage= String2Bean.stringToBean(msg,MqMessage.class);
         User user=mqMessage.getUser();
-        long id=mqMessage.getGoods().getId();
+        int id=mqMessage.getGoods();
         //判断库存
-        SeckillGoods good = miaoShaService.find((int) id);
+        SeckillGoods good = miaoShaService.find(id);
         int stock=good.getStock();
-        if (stock<=0)
+        if (stock<=0){
+            miaoShaService.setGoodsOver(id);
             return;
+        }
         //判断是否购买
-        if (miaoShaService.inquiry(user, (int) id)!=null)
+        if (miaoShaService.inquiry(user, id)!=null)
             return;
-        miaoShaService.addOrder(user,(int)id);
+        miaoShaService.addOrder(user, id);
     }
 
 }

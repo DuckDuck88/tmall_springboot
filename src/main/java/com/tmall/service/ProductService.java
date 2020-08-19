@@ -53,7 +53,7 @@ public class ProductService {
 
 
     //查
-    @Cacheable(key = "'products-one-'+#p0")
+    @Cacheable(key = "'products-one-'+#p")
     public Product get(int id) {
         return productDAO.findById(id).get();
     }

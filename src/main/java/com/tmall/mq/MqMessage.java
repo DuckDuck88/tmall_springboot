@@ -1,6 +1,5 @@
 package com.tmall.mq;
 
-import com.tmall.pojo.SeckillGoods;
 import com.tmall.pojo.User;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,7 @@ import lombok.Setter;
  */
 public class MqMessage {
     @Setter@Getter
-    private SeckillGoods goods;
+    private int goods;
     @Setter@Getter
     private User user;
 }

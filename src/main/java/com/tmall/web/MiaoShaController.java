@@ -1,6 +1,8 @@
 package com.tmall.web;
 
 import com.tmall.interceptor.Limiting;
+import com.tmall.mq.MqMessage;
+import com.tmall.mq.MqSender;
 import com.tmall.pojo.SeckillGoods;
 import com.tmall.pojo.User;
 import com.tmall.service.MiaoShaService;
@@ -12,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
@@ -34,6 +37,8 @@ public class MiaoShaController implements InitializingBean {
     MiaoShaService miaoShaService;
     @Autowired
     RedisTemplate redisTemplate;
+    @Autowired
+    MqSender mqSender;
 
     //内存标记,用于减少redis访问
     private final Map<Long, Boolean> localOver = new HashMap();
@@ -73,8 +78,8 @@ public class MiaoShaController implements InitializingBean {
     }
 
     //走缓存  用户--检查内存标记--是否已经购买--预减库存--下订单
-    @GetMapping(value = "seckill2/{goodsId}")
-    public Object miaosha2(@PathVariable(value = "goodsId") int goodsId, HttpSession session) {
+    @GetMapping(value = "seckill2/{goodId}")
+    public Object miaosha2(@PathVariable(value = "goodId") int goodId, HttpSession session) {
         if (!limiting.tryAcquire()) {
             return Result.fail("fail，限流");
         }
@@ -83,19 +88,19 @@ public class MiaoShaController implements InitializingBean {
         if (user == null)
             return Result.fail("fail，未登录");
         //判断是否已经买过
-        if (miaoShaService.inquiry(user, goodsId) != null)
+        if (miaoShaService.inquiry(user, goodId) != null)
             return Result.fail("fail,已经购买过啦");
         //判断内存标记
-        if (localOver.get(goodsId))
+        if (localOver.get(goodId))
             return Result.fail("fail,已经卖完啦");
         //判断库存,redis预减库存
         ValueOperations ops = redisTemplate.opsForValue();
-        Long stock = ops.decrement(goodsId, 1);
+        Long stock = ops.decrement(goodId, 1);
         if (stock <= 0) {
-            localOver.put((long) goodsId, true);
+            localOver.put((long) goodId, true);
             return Result.fail("fail,刚卖完啦");
         }
-        if (miaoShaService.addOrder(user, goodsId))
+        if (miaoShaService.addOrder(user, goodId))
             return Result.success("成功");
         else
             return Result.fail("fail,下单失败");
@@ -104,7 +109,40 @@ public class MiaoShaController implements InitializingBean {
     //异步下单  用户--检查内存标记--是否购买--预减库存--放入消息队列异步下单
     @GetMapping(value = "seckill3/{goodId}")
     public Object miaosha3(@PathVariable(value = "goodId")int goodId,HttpSession session){
-
+        if (!limiting.tryAcquire()) {
+            return Result.fail("fail，限流");
+        }
+        //判断用户
+        User user = (User) session.getAttribute("user");
+        if (user == null)
+            return Result.fail("fail，未登录");
+        //判断是否已经买过
+        if (miaoShaService.inquiry(user, goodId) != null)
+            return Result.fail("fail,已经购买过啦");
+        //判断内存标记
+        if (localOver.get(goodId))
+            return Result.fail("fail,已经卖完啦");
+        //判断库存,redis预减库存
+        ValueOperations ops = redisTemplate.opsForValue();
+        Long stock = ops.decrement(goodId, 1);
+        if (stock <= 0) {
+            localOver.put((long) goodId, true);
+            return Result.fail("fail,刚卖完啦");
+        }
+        MqMessage mm = new MqMessage();
+        mm.setGoods(goodId);
+        mm.setUser(user);
+        mqSender.sendMessage(mm);
         return Result.success();
+    }
+
+    //异步下单获取结果
+    @GetMapping(value = "result")
+    public Object miaoshaResult(@RequestParam("goodId") int goodId,User user){
+        if (user==null){
+            return Result.fail("用户未登录");
+        }
+        int miaoshaResult=miaoShaService.getMiaoshaResult(user.getId(), goodId);
+        return Result.success(miaoshaResult);
     }
 }

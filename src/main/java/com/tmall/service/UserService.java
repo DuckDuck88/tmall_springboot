@@ -44,6 +44,11 @@ public class UserService {
     public User getByName(String name){
         return userDAO.findByName(name);
     }
+
+    public User getById(int id){
+        return userDAO.getById(id);
+    }
+
     //添加用户，注册用户
     @CacheEvict(allEntries = true)
     public void  add(User user){
