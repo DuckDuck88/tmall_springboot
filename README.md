@@ -1,7 +1,7 @@
 # tmall_springboot
 开发环境：JDK8、MySQL 5.5.15、IDEA 2019、Redis 3.2.1 RabbitMQ 3.7.18  
 仿照天猫的Springboot项目，实现天猫基本功能，包括商品秒杀
-本项目已经部署到云服务器，点击如下链接访问http://119.3.190.216:8080/MyTmall    
+本项目已经部署到云服务器，点击如下链接访问www.yuya996.com/MyTmall    
 ！！！部署只为学习交流使用，请勿使用支付功能！！！
 
 ### 已完成的基本功能如下：
